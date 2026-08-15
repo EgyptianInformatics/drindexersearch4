@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark theme surfaces -->
+    <color name="background">#111827</color>
+    <color name="surface">#1F2937</color>
+
+    <!-- Text (light on dark) -->
+    <color name="text_primary">#F9FAFB</color>
+    <color name="text_secondary">#9CA3AF</color>
+    <color name="text_hint">#6B7280</color>
+
+    <!-- Drawable colors for dark mode -->
+    <color name="search_bg_stroke">#374151</color>
+    <color name="search_bg_fill">#1F2937</color>
+    <color name="tag_bg">#374151</color>
+    <color name="spinner_bg_stroke">#374151</color>
+    <color name="spinner_bg_fill">#1F2937</color>
+</resources>

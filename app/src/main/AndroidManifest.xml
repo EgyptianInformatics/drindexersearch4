@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.DrIndexerSearch">
+        
+        <activity
+            android:name=".MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.DrIndexerSearch">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".DatabaseActivity"
+            android:exported="false"
+            android:label="Database"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.DrIndexerSearch" />
+
+        <activity
+            android:name=".ScansActivity"
+            android:exported="false"
+            android:label="Browse Scans"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.DrIndexerSearch" />
+
+        <activity
+            android:name=".FolderBrowserActivity"
+            android:exported="false"
+            android:label="Browse Folders"
+            android:parentActivityName=".ScansActivity"
+            android:theme="@style/Theme.DrIndexerSearch" />
+
+    </application>
+
+</manifest>
