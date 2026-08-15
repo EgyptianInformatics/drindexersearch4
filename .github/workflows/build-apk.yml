@@ -2,8 +2,21 @@ name: Build APK
 
 on:
   push:
-    branches: [ main, master ]
-  workflow_dispatch:   # allows manual "Run workflow" from the Actions tab
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Optional release tag, e.g. v4.0.0. Leave empty for build only.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -11,16 +24,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -31,19 +45,62 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleDebug --stacktrace
 
+      - name: Verify debug APK
+        run: |
+          echo "Debug APK:"
+          ls -lh app/build/outputs/apk/debug/*.apk
+
       - name: Upload debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: DrIndexerSearch-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
 
-      - name: Build release APK (unsigned)
+      - name: Build release APK
         run: ./gradlew assembleRelease --stacktrace
 
-      - name: Upload release APK (unsigned)
-        uses: actions/upload-artifact@v4
+      - name: Verify release APK
+        run: |
+          echo "Release APK:"
+          ls -lh app/build/outputs/apk/release/*.apk
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v6
         with:
-          name: DrIndexerSearch-release-unsigned-apk
+          name: DrIndexerSearch-release-apk
           path: app/build/outputs/apk/release/*.apk
-          if-no-files-found: warn
+          if-no-files-found: error
+
+      - name: Determine release tag
+        id: release
+        shell: bash
+        run: |
+          TAG=""
+
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG="$GITHUB_REF_NAME"
+          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && -n "${{ inputs.release_tag }}" ]]; then
+            TAG="${{ inputs.release_tag }}"
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+          if [[ -n "$TAG" ]]; then
+            echo "GitHub Release will be created: $TAG"
+          else
+            echo "Build only - no GitHub Release requested."
+          fi
+
+      - name: Create GitHub Release
+        if: steps.release.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            app/build/outputs/apk/debug/*.apk \
+            app/build/outputs/apk/release/*.apk \
+            --title "Dr. Indexer Search $RELEASE_TAG" \
+            --generate-notes \
+            --target "$GITHUB_SHA"
